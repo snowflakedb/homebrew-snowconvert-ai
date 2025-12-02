@@ -6,11 +6,13 @@ Separating configuration from logic makes it easier to maintain and update
 when environments or URLs change.
 """
 
+import os
+
 # Base URL for the artifact repository (Azure Blob Storage)
 ARTIFACT_REPO_BASE = "https://snowconvert.snowflake.com/storage"
 
-# Environment: prod, or dev
-ENVIRONMENT = "dev"
+# Environment: prod, or dev (can be overridden with SCAI_ENVIRONMENT env var)
+ENVIRONMENT = os.getenv("SCAI_ENVIRONMENT", "dev")
 
 # Architecture identifiers
 INTEL = "x64"

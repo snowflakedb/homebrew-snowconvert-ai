@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import os
 import requests
 from pathlib import Path
 
@@ -116,7 +117,19 @@ def calculate_sha256_from_pkg(metadata: dict) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Update SnowConvert AI formula")
-    parser.add_argument("template_path", type=str, help="Path to the Jinja2 template file")
-    parser.add_argument("file_path", type=str, help="Path to the output file")
+    parser.add_argument(
+        "template_path", 
+        type=str, 
+        nargs='?',
+        default="snowconvert-ai.tmpl.rb",
+        help="Path to the Jinja2 template file (default: snowconvert-ai.tmpl.rb)"
+    )
+    parser.add_argument(
+        "file_path", 
+        type=str, 
+        nargs='?',
+        default="snowconvert-ai.rb",
+        help="Path to the output file (default: snowconvert-ai.rb)"
+    )
     args = parser.parse_args()
     main(args.template_path, args.file_path)
