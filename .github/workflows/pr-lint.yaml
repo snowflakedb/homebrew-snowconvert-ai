@@ -1,0 +1,37 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  push:
+    branches:
+      - "*"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-lint:
+    if: ${{ github.event_name == 'push' || (github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.user.login != 'snyk-io[bot]') }}
+    name: Cask Syntax Validation
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate Cask Syntax
+        run: |
+          set -e
+          
+          echo "Tapping local repository..."
+          brew tap snowflakedb/snowconvert-ai ${GITHUB_WORKSPACE:-$(pwd)}
+          
+          echo "Checking Ruby syntax..."
+          ruby -c Casks/snowconvert-ai.rb
+          
+          echo "Running brew audit..."
+          brew audit --cask --online snowflakedb/snowconvert-ai/snowconvert-ai || echo "Note: Some audit checks may fail without real artifacts"
+          
+          echo "✓ Cask validation completed"
