@@ -22,7 +22,7 @@ jobs:
   Update-Cask:
     runs-on: ubuntu-latest
     env:
-      SCAI_ENVIRONMENT: ${{ github.event.inputs.environment || 'prod' }}
+      SCAI_ENVIRONMENT: ${{ secrets.SCAI_ENVIRONMENT || github.event.inputs.environment || 'prod' }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v6
