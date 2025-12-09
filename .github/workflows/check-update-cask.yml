@@ -64,7 +64,7 @@ jobs:
           set -e
           echo "Updating cask for environment: ${SCAI_ENVIRONMENT}"
           
-          python update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb
+          python update.py
           
           if git diff --quiet Casks/snowconvert-ai.rb; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
