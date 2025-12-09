@@ -12,7 +12,7 @@ source "${ENV}/bin/activate"
 pip install -r requirements.txt
 
 # Update formula
-VERSION="$(python3 update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb)"
+VERSION="$(python3 update.py)"
 
 # Remove venv
 rm -rf "${ENV}"
