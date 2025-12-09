@@ -19,8 +19,6 @@ cask "snowconvert-ai" do
     strategy :electron_builder
   end
 
-  auto_updates true
-
   pkg "{{ package_prefix }}-#{version}-darwin-#{arch_suffix}.{{ package_extension }}"
   
   uninstall pkgutil: "com.snowflake.snowconvertai.cli"

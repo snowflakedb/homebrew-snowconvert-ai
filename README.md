@@ -24,13 +24,7 @@ scai --help
 
 ## Updates
 
-The cask has `auto_updates true` enabled, so Homebrew will automatically update it when you run:
-
-```bash
-brew upgrade
-```
-
-To manually check for updates:
+To update SnowConvert AI to the latest version:
 
 ```bash
 brew upgrade --cask snowconvert-ai
