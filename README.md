@@ -22,9 +22,28 @@ After installation, you can use the SnowConvert AI CLI:
 scai --help
 ```
 
+## Updates
+
+The cask has `auto_updates true` enabled, so Homebrew will automatically update it when you run:
+
+```bash
+brew upgrade
+```
+
+To manually check for updates:
+
+```bash
+brew upgrade --cask snowconvert-ai
+```
+
 ## Development
 
 To update the formula run:
+```shell
+bash quick-update.sh
+```
+
+Or use the full update script:
 ```shell
 bash update.sh
 ```

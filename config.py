@@ -9,6 +9,8 @@ when environments or URLs change.
 import os
 
 ARTIFACT_REPO_BASE = "https://snowconvert.snowflake.com/storage"
+
+# Get environment from system environment variable or default to 'dev'
 ENVIRONMENT = os.getenv("SCAI_ENVIRONMENT", "dev")
 
 INTEL = "x64"
