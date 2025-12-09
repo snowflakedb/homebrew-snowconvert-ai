@@ -51,7 +51,7 @@ def main(template_name: str, file_name):
         loader=jinja2.loaders.FileSystemLoader(Path(__file__).parent)
     )
 
-    template_path = Path("Casks") / template_name
+    template_path = Path(template_name)
     file_path = Path("Casks") / file_name
 
     template = env.get_template(str(template_path))
