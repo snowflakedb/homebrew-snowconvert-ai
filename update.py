@@ -10,7 +10,6 @@ from config import (
     ARTIFACT_REPO_BASE,
     INTEL,
     ARM,
-    ENVIRONMENT,
     CASK_NAME,
     CASK_DESC,
     CASK_HOMEPAGE,
@@ -46,7 +45,96 @@ class SemVer:
         return self.version_str
 
 
-def main(template_name: str, file_name):
+def detect_target_environment(cask_type: str = "prod") -> tuple[str, bool]:
+    """
+    Detects the correct environment for the cask based on Azure Blob Storage.
+    
+    For prod cask (snowconvert-ai):
+        - Tries prod first (GA versions without PrPr)
+        - Falls back to beta if prod doesn't exist (staging versions with PrPr)
+    
+    For dev cask (snowconvert-ai-dev):
+        - Always uses dev
+    
+    Args:
+        cask_type: "prod" or "dev"
+    
+    Returns:
+        Tuple of (environment_name, exists): 
+            - environment_name: "prod", "beta", or "dev"
+            - exists: True if the environment has artifacts, False otherwise
+    """
+    if cask_type == "dev":
+        # Verify dev environment exists
+        try:
+            url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/dev/cli/latest-mac.yml"
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return "dev", True
+            else:
+                print(f"⚠ Dev environment requested but latest-mac.yml not found (HTTP {response.status_code})")
+                return "dev", False
+        except Exception as e:
+            print(f"✗ Could not access dev environment: {e}")
+            return "dev", False
+    
+    # For prod cask, try to detect if there's a version in prod
+    environments_to_try = ["prod", "beta"]
+    
+    for env in environments_to_try:
+        try:
+            url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/{env}/cli/latest-mac.yml"
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                metadata = yaml.safe_load(response.text)
+                version = metadata.get('version', '')
+                
+                print(f"✓ Found version {version} in {env} environment")
+                
+                # For prod, only accept versions without PrPr (GA releases)
+                if env == "prod" and "PrPr" not in version:
+                    print(f"→ Using prod environment (GA release)")
+                    return "prod", True
+                
+                # If prod doesn't have GA version, use beta
+                if env == "beta":
+                    print(f"→ Using beta environment (staging release)")
+                    return "beta", True
+            else:
+                print(f"✗ {env} environment not available (HTTP {response.status_code})")
+                    
+        except Exception as e:
+            print(f"✗ Could not access {env}: {e}")
+            continue
+    
+    # No environment found
+    print("⚠ No artifacts found in any environment (prod, beta)")
+    return "beta", False
+
+
+def main(template_name: str, file_name: str, cask_type: str = "prod"):
+    """
+    Updates the cask with the latest available version.
+    
+    Args:
+        template_name: Template file name
+        file_name: Output file name
+        cask_type: "prod" or "dev" - determines which environment to use
+    """
+    # Detect the correct environment
+    environment, exists = detect_target_environment(cask_type)
+    print(f"\n{'='*60}")
+    print(f"Updating {file_name}")
+    print(f"Target cask type: {cask_type}")
+    print(f"Selected environment: {environment}")
+    print(f"{'='*60}\n")
+    
+    if not exists:
+        error_msg = f"❌ Cannot update {file_name}: No artifacts found in {environment} environment"
+        print(error_msg)
+        raise FileNotFoundError(f"latest-mac.yml not found in {environment} environment at {ARTIFACT_REPO_BASE}/darwin_*/cli/latest-mac.yml")
+    
     env = jinja2.Environment(
         loader=jinja2.loaders.FileSystemLoader(Path(__file__).parent)
     )
@@ -56,9 +144,9 @@ def main(template_name: str, file_name):
 
     template = env.get_template(str(template_path))
 
-    # Fetch latest metadata for both architectures
-    metadata_arm = get_yaml_metadata(ARM)
-    metadata_intel = get_yaml_metadata(INTEL)
+    # Fetch latest metadata for both architectures from the detected environment
+    metadata_arm = get_yaml_metadata(ARM, environment)
+    metadata_intel = get_yaml_metadata(INTEL, environment)
 
     version_arm = metadata_arm['version']
     version_intel = metadata_intel['version']
@@ -67,8 +155,8 @@ def main(template_name: str, file_name):
         raise ValueError(f"Latest version ARM ({version_arm}) and Intel ({version_intel}) do not match. Check with RELENG team, and make sure repo is updated")
 
     # Download packages and calculate SHA256
-    sha_for_intel = calculate_sha256_from_pkg(metadata_intel)
-    sha_for_arm = calculate_sha256_from_pkg(metadata_arm)
+    sha_for_intel = calculate_sha256_from_pkg(metadata_intel, environment)
+    sha_for_arm = calculate_sha256_from_pkg(metadata_arm, environment)
 
     if not template_path.exists():
         raise ValueError(f"Template file not found: {template}")
@@ -79,7 +167,7 @@ def main(template_name: str, file_name):
                 sc_version=version_arm,
                 sc_intel_sha=sha_for_intel,
                 sc_arm_sha=sha_for_arm,
-                environment=ENVIRONMENT,
+                environment=environment,
                 cask_name=CASK_NAME,
                 cask_desc=CASK_DESC,
                 cask_homepage=CASK_HOMEPAGE,
@@ -89,19 +177,20 @@ def main(template_name: str, file_name):
                 livecheck_arch=LIVECHECK_ARCH,
             )
         )
+    print(f"\n✓ Successfully updated {file_name} to version {version_arm}")
     print(version_arm)
 
-def get_yaml_metadata(architecture: str) -> dict:
+def get_yaml_metadata(architecture: str, environment: str) -> dict:
     """Fetch and parse the latest-mac.yml file for the given architecture."""
-    url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{ENVIRONMENT}/cli/latest-mac.yml"
+    url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{environment}/cli/latest-mac.yml"
     response = requests.get(url)
     response.raise_for_status()
     return yaml.safe_load(response.text)
 
-def calculate_sha256_from_pkg(metadata: dict) -> str:
+def calculate_sha256_from_pkg(metadata: dict, environment: str) -> str:
     """Download the package and calculate its SHA256 hash."""
     architecture = "arm64" if "arm64" in metadata['path'] else "x64"
-    pkg_url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{ENVIRONMENT}/cli/{metadata['path']}"
+    pkg_url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{environment}/cli/{metadata['path']}"
     
     # Download the package
     response = requests.get(pkg_url, stream=True)
@@ -131,5 +220,12 @@ if __name__ == "__main__":
         default="snowconvert-ai.rb",
         help="Path to the output file (default: snowconvert-ai.rb)"
     )
+    parser.add_argument(
+        "--cask-type",
+        type=str,
+        choices=["prod", "dev"],
+        default="prod",
+        help="Type of cask: 'prod' (uses prod/beta) or 'dev' (uses dev environment)"
+    )
     args = parser.parse_args()
-    main(args.template_path, args.file_path)
+    main(args.template_path, args.file_path, args.cask_type)
