@@ -4,12 +4,12 @@ Configuration file for SnowConvertAI CLI Homebrew formula updater.
 This file contains all the configuration constants used by the update script.
 Separating configuration from logic makes it easier to maintain and update
 when environments or URLs change.
+
+The environment (prod/beta/dev) is now auto-detected by the update script
+based on what's available in Azure Blob Storage.
 """
 
-import os
-
 ARTIFACT_REPO_BASE = "https://snowconvert.snowflake.com/storage"
-ENVIRONMENT = os.getenv("SCAI_ENVIRONMENT", "dev")
 
 INTEL = "x64"
 ARM = "arm64"

@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parse arguments
+CASK_TYPE="${1:-both}"
+
+if [[ "$CASK_TYPE" != "prod" && "$CASK_TYPE" != "dev" && "$CASK_TYPE" != "both" ]]; then
+  echo "Usage: $0 [prod|dev|both]"
+  echo "  prod - Update snowconvert-ai cask (auto-detects prod/beta)"
+  echo "  dev  - Update snowconvert-ai-dev cask"
+  echo "  both - Update both casks (default)"
+  exit 1
+fi
+
 # Clean up the environment
 ENV="homebrew-tmp-env"
 
@@ -11,15 +22,38 @@ source "${ENV}/bin/activate"
 # Install requirements
 pip install -r requirements.txt
 
-# Update formula
-VERSION="$(python3 update.py)"
+# Update cask(s)
+if [[ "$CASK_TYPE" == "both" || "$CASK_TYPE" == "prod" ]]; then
+  echo "Updating snowconvert-ai (prod)..."
+  VERSION_PROD="$(python3 update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb --cask-type prod)"
+fi
+
+if [[ "$CASK_TYPE" == "both" || "$CASK_TYPE" == "dev" ]]; then
+  echo "Updating snowconvert-ai-dev..."
+  VERSION_DEV="$(python3 update.py snowconvert-ai-dev.tmpl.rb snowconvert-ai-dev.rb --cask-type dev)"
+fi
 
 # Remove venv
 rm -rf "${ENV}"
 
 echo
 echo "Formula update done."
-echo "git checkout -b bump-version-${VERSION}"
-echo "git add Casks/snowconvert-ai.rb"
-echo "git commit -m 'Update formula to v${VERSION}'"
-echo "git push origin bump-version-${VERSION}"
+echo
+echo "Suggested git commands:"
+
+if [[ "$CASK_TYPE" == "both" ]]; then
+  echo "git checkout -b update-casks-${VERSION_PROD:-unknown}"
+  echo "git add Casks/snowconvert-ai.rb Casks/snowconvert-ai-dev.rb"
+  echo "git commit -m 'Update casks: snowconvert-ai v${VERSION_PROD:-unknown}, snowconvert-ai-dev v${VERSION_DEV:-unknown}'"
+  echo "git push origin update-casks-${VERSION_PROD:-unknown}"
+elif [[ "$CASK_TYPE" == "prod" ]]; then
+  echo "git checkout -b update-snowconvert-ai-${VERSION_PROD}"
+  echo "git add Casks/snowconvert-ai.rb"
+  echo "git commit -m 'Update snowconvert-ai to v${VERSION_PROD}'"
+  echo "git push origin update-snowconvert-ai-${VERSION_PROD}"
+else
+  echo "git checkout -b update-snowconvert-ai-dev-${VERSION_DEV}"
+  echo "git add Casks/snowconvert-ai-dev.rb"
+  echo "git commit -m 'Update snowconvert-ai-dev to v${VERSION_DEV}'"
+  echo "git push origin update-snowconvert-ai-dev-${VERSION_DEV}"
+fi
