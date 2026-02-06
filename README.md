@@ -55,11 +55,17 @@ brew install --cask snowconvert-ai
 
 ### Update to Latest Version
 
+**Important:** You must run `brew update` first to sync the tap with the latest cask definitions:
+
 ```bash
-brew upgrade --cask snowconvert-ai
-# or
-brew upgrade --cask snowconvert-ai-dev
+# Update tap definitions and upgrade to latest version
+brew update && brew upgrade --cask snowconvert-ai
+
+# For dev version
+brew update && brew upgrade --cask snowconvert-ai-dev
 ```
+
+> **Why both commands?** `brew update` synchronizes your local tap with the latest cask definitions from GitHub. Without it, `brew upgrade` won't see new versions even if they exist on the server.
 
 ## For Maintainers
 
