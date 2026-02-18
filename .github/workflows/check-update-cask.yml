@@ -6,10 +6,10 @@ on:
       cask_type:
         description: "Which cask to update"
         required: true
-        default: "both"
+        default: "all"
         type: choice
         options:
-          - "both"
+          - "all"
           - "prod"
           - "beta"
           - "dev"
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cask_type: ${{ github.event.inputs.cask_type == 'both' && fromJSON('["prod", "beta", "dev"]') || fromJSON(format('["{0}"]', github.event.inputs.cask_type || 'both')) }}
+        cask_type: ${{ github.event.inputs.cask_type == 'all' && fromJSON('["prod", "beta", "dev"]') || fromJSON(format('["{0}"]', github.event.inputs.cask_type || 'all')) }}
     env:
       CASK_TYPE: ${{ matrix.cask_type }}
     steps:
