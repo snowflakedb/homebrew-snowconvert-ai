@@ -30,8 +30,12 @@ jobs:
           
           echo "Checking Ruby syntax..."
           ruby -c Casks/snowconvert-ai.rb
+          ruby -c Casks/snowconvert-ai-pupr.rb
+          ruby -c Casks/snowconvert-ai-dev.rb
           
           echo "Running brew audit..."
           brew audit --cask --online snowflakedb/snowconvert-ai/snowconvert-ai || echo "Note: Some audit checks may fail without real artifacts"
+          brew audit --cask --online snowflakedb/snowconvert-ai/snowconvert-ai-pupr || echo "Note: Some audit checks may fail without real artifacts"
+          brew audit --cask --online snowflakedb/snowconvert-ai/snowconvert-ai-dev || echo "Note: Some audit checks may fail without real artifacts"
           
           echo "✓ Cask validation completed"

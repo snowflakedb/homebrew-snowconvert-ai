@@ -4,11 +4,12 @@ set -euo pipefail
 # Parse arguments
 CASK_TYPE="${1:-both}"
 
-if [[ "$CASK_TYPE" != "prod" && "$CASK_TYPE" != "dev" && "$CASK_TYPE" != "both" ]]; then
-  echo "Usage: $0 [prod|dev|both]"
-  echo "  prod - Update snowconvert-ai cask (auto-detects prod/beta)"
-  echo "  dev  - Update snowconvert-ai-dev cask"
-  echo "  both - Update both casks (default)"
+if [[ "$CASK_TYPE" != "prod" && "$CASK_TYPE" != "beta" && "$CASK_TYPE" != "dev" && "$CASK_TYPE" != "both" ]]; then
+  echo "Usage: $0 [prod|beta|dev|both]"
+  echo "  prod - Update snowconvert-ai cask (prod environment)"
+  echo "  beta - Update snowconvert-ai-pupr cask (beta/staging environment)"
+  echo "  dev  - Update snowconvert-ai-dev cask (dev environment)"
+  echo "  both - Update all casks (default)"
   exit 1
 fi
 
@@ -28,6 +29,11 @@ if [[ "$CASK_TYPE" == "both" || "$CASK_TYPE" == "prod" ]]; then
   VERSION_PROD="$(python3 update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb --cask-type prod)"
 fi
 
+if [[ "$CASK_TYPE" == "both" || "$CASK_TYPE" == "beta" ]]; then
+  echo "Updating snowconvert-ai-pupr..."
+  VERSION_BETA="$(python3 update.py snowconvert-ai-pupr.tmpl.rb snowconvert-ai-pupr.rb --cask-type beta)"
+fi
+
 if [[ "$CASK_TYPE" == "both" || "$CASK_TYPE" == "dev" ]]; then
   echo "Updating snowconvert-ai-dev..."
   VERSION_DEV="$(python3 update.py snowconvert-ai-dev.tmpl.rb snowconvert-ai-dev.rb --cask-type dev)"
@@ -43,14 +49,19 @@ echo "Suggested git commands:"
 
 if [[ "$CASK_TYPE" == "both" ]]; then
   echo "git checkout -b update-casks-${VERSION_PROD:-unknown}"
-  echo "git add Casks/snowconvert-ai.rb Casks/snowconvert-ai-dev.rb"
-  echo "git commit -m 'Update casks: snowconvert-ai v${VERSION_PROD:-unknown}, snowconvert-ai-dev v${VERSION_DEV:-unknown}'"
+  echo "git add Casks/snowconvert-ai.rb Casks/snowconvert-ai-pupr.rb Casks/snowconvert-ai-dev.rb"
+  echo "git commit -m 'Update casks: snowconvert-ai v${VERSION_PROD:-unknown}, snowconvert-ai-pupr v${VERSION_BETA:-unknown}, snowconvert-ai-dev v${VERSION_DEV:-unknown}'"
   echo "git push origin update-casks-${VERSION_PROD:-unknown}"
 elif [[ "$CASK_TYPE" == "prod" ]]; then
   echo "git checkout -b update-snowconvert-ai-${VERSION_PROD}"
   echo "git add Casks/snowconvert-ai.rb"
   echo "git commit -m 'Update snowconvert-ai to v${VERSION_PROD}'"
   echo "git push origin update-snowconvert-ai-${VERSION_PROD}"
+elif [[ "$CASK_TYPE" == "beta" ]]; then
+  echo "git checkout -b update-snowconvert-ai-pupr-${VERSION_BETA}"
+  echo "git add Casks/snowconvert-ai-pupr.rb"
+  echo "git commit -m 'Update snowconvert-ai-pupr to v${VERSION_BETA}'"
+  echo "git push origin update-snowconvert-ai-pupr-${VERSION_BETA}"
 else
   echo "git checkout -b update-snowconvert-ai-dev-${VERSION_DEV}"
   echo "git add Casks/snowconvert-ai-dev.rb"
