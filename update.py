@@ -50,67 +50,54 @@ def detect_target_environment(cask_type: str = "prod") -> tuple[str, bool]:
     Detects the correct environment for the cask based on Azure Blob Storage.
     
     For prod cask (snowconvert-ai):
-        - Tries prod first (GA versions without PrPr)
-        - Falls back to beta if prod doesn't exist (staging versions with PrPr)
+        - Only uses prod (GA versions)
+    
+    For beta cask (snowconvert-ai-pupr):
+        - Always uses beta (staging versions)
     
     For dev cask (snowconvert-ai-dev):
         - Always uses dev
     
     Args:
-        cask_type: "prod" or "dev"
+        cask_type: "prod", "beta", or "dev"
     
     Returns:
         Tuple of (environment_name, exists): 
             - environment_name: "prod", "beta", or "dev"
             - exists: True if the environment has artifacts, False otherwise
     """
-    if cask_type == "dev":
-        # Verify dev environment exists
-        try:
-            url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/dev/cli/latest-mac.yml"
-            response = requests.get(url, timeout=10)
-            if response.status_code == 200:
-                return "dev", True
-            else:
-                print(f"⚠ Dev environment requested but latest-mac.yml not found (HTTP {response.status_code})")
-                return "dev", False
-        except Exception as e:
-            print(f"✗ Could not access dev environment: {e}")
-            return "dev", False
-    
-    # For prod cask, try to detect if there's a version in prod
-    environments_to_try = ["prod", "beta"]
-    
-    for env in environments_to_try:
+    if cask_type in ("dev", "beta"):
+        env = cask_type
         try:
             url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/{env}/cli/latest-mac.yml"
             response = requests.get(url, timeout=10)
-            
             if response.status_code == 200:
-                metadata = yaml.safe_load(response.text)
-                version = metadata.get('version', '')
-                
-                print(f"✓ Found version {version} in {env} environment")
-                
-                # For prod, only accept versions without PrPr (GA releases)
-                if env == "prod" and "PrPr" not in version:
-                    print(f"→ Using prod environment (GA release)")
-                    return "prod", True
-                
-                # If prod doesn't have GA version, use beta
-                if env == "beta":
-                    print(f"→ Using beta environment (staging release)")
-                    return "beta", True
+                return env, True
             else:
-                print(f"✗ {env} environment not available (HTTP {response.status_code})")
-                    
+                print(f"⚠ {env} environment requested but latest-mac.yml not found (HTTP {response.status_code})")
+                return env, False
         except Exception as e:
-            print(f"✗ Could not access {env}: {e}")
-            continue
+            print(f"✗ Could not access {env} environment: {e}")
+            return env, False
     
-    # No environment found
-    print("⚠ No artifacts found in any environment (prod, beta)")
-    return "beta", False
+    # For prod cask, only check prod environment
+    try:
+        url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/prod/cli/latest-mac.yml"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            metadata = yaml.safe_load(response.text)
+            version = metadata.get('version', '')
+            print(f"✓ Found version {version} in prod environment")
+            print(f"→ Using prod environment (GA release)")
+            return "prod", True
+        else:
+            print(f"✗ prod environment not available (HTTP {response.status_code})")
+    except Exception as e:
+        print(f"✗ Could not access prod: {e}")
+    
+    print("⚠ No artifacts found in prod environment")
+    return "prod", False
 
 
 def main(template_name: str, file_name: str, cask_type: str = "prod"):
@@ -120,7 +107,7 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
     Args:
         template_name: Template file name
         file_name: Output file name
-        cask_type: "prod" or "dev" - determines which environment to use
+        cask_type: "prod", "beta", or "dev" - determines which environment to use
     """
     # Detect the correct environment
     environment, exists = detect_target_environment(cask_type)
@@ -223,9 +210,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--cask-type",
         type=str,
-        choices=["prod", "dev"],
+        choices=["prod", "dev", "beta"],
         default="prod",
-        help="Type of cask: 'prod' (uses prod/beta) or 'dev' (uses dev environment)"
+        help="Type of cask: 'prod' (uses prod), 'beta' (uses beta/staging), or 'dev' (uses dev environment)"
     )
     args = parser.parse_args()
     main(args.template_path, args.file_path, args.cask_type)

@@ -11,6 +11,7 @@ on:
         options:
           - "both"
           - "prod"
+          - "beta"
           - "dev"
   schedule:
     - cron: '0 * * * *'  # Run hourly to check for updates
@@ -24,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cask_type: ${{ github.event.inputs.cask_type == 'both' && fromJSON('["prod", "dev"]') || fromJSON(format('["{0}"]', github.event.inputs.cask_type || 'both')) }}
+        cask_type: ${{ github.event.inputs.cask_type == 'both' && fromJSON('["prod", "beta", "dev"]') || fromJSON(format('["{0}"]', github.event.inputs.cask_type || 'both')) }}
     env:
       CASK_TYPE: ${{ matrix.cask_type }}
     steps:
@@ -61,7 +62,9 @@ jobs:
         run: |
           set -e
           CASK_FILE="Casks/snowconvert-ai.rb"
-          if [ "${{ matrix.cask_type }}" == "dev" ]; then
+          if [ "${{ matrix.cask_type }}" == "beta" ]; then
+            CASK_FILE="Casks/snowconvert-ai-pupr.rb"
+          elif [ "${{ matrix.cask_type }}" == "dev" ]; then
             CASK_FILE="Casks/snowconvert-ai-dev.rb"
           fi
           
@@ -80,10 +83,15 @@ jobs:
           set -e
           
           if [ "${{ matrix.cask_type }}" == "prod" ]; then
-            echo "Updating snowconvert-ai (auto-detecting prod/beta environment)..."
+            echo "Updating snowconvert-ai (prod environment)..."
             python3 update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb --cask-type prod
             CASK_FILE="Casks/snowconvert-ai.rb"
             CASK_NAME="snowconvert-ai"
+          elif [ "${{ matrix.cask_type }}" == "beta" ]; then
+            echo "Updating snowconvert-ai-pupr (beta/staging environment)..."
+            python3 update.py snowconvert-ai-pupr.tmpl.rb snowconvert-ai-pupr.rb --cask-type beta
+            CASK_FILE="Casks/snowconvert-ai-pupr.rb"
+            CASK_NAME="snowconvert-ai-pupr"
           else
             echo "Updating snowconvert-ai-dev (development environment)..."
             python3 update.py snowconvert-ai-dev.tmpl.rb snowconvert-ai-dev.rb --cask-type dev
