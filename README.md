@@ -13,13 +13,13 @@ brew tap snowflakedb/snowconvert-ai
 brew install --cask snowconvert-ai
 ```
 
-### Public Preview Version
+### Preview Version
 
-Install the Public Preview (PuPr) version with pre-release features from the beta/staging environment:
+Install the Preview (PR) version with pre-release features from the beta/staging environment:
 
 ```bash
 brew tap snowflakedb/snowconvert-ai
-brew install --cask snowconvert-ai-pupr
+brew install --cask snowconvert-ai-pr
 ```
 
 ### Development Version
@@ -49,7 +49,7 @@ For complete documentation, tutorials, and guides, visit:
 ```bash
 brew info --cask snowconvert-ai
 # or
-brew info --cask snowconvert-ai-pupr
+brew info --cask snowconvert-ai-pr
 # or
 brew info --cask snowconvert-ai-dev
 ```
@@ -63,7 +63,7 @@ brew uninstall --cask snowconvert-ai-dev
 # Install another version
 brew install --cask snowconvert-ai
 # or
-brew install --cask snowconvert-ai-pupr
+brew install --cask snowconvert-ai-pr
 ```
 
 ### Update to Latest Version
@@ -75,7 +75,7 @@ brew install --cask snowconvert-ai-pupr
 brew update && brew upgrade --cask snowconvert-ai
 
 # For public preview version
-brew update && brew upgrade --cask snowconvert-ai-pupr
+brew update && brew upgrade --cask snowconvert-ai-pr
 
 # For dev version
 brew update && brew upgrade --cask snowconvert-ai-dev
@@ -93,7 +93,7 @@ brew update && brew upgrade --cask snowconvert-ai-dev
 | Cask | Environment | Description |
 |------|-------------|-------------|
 | `snowconvert-ai` | **prod** | GA (General Availability) release |
-| `snowconvert-ai-pupr` | **beta** | Public Preview / staging release |
+| `snowconvert-ai-pr` | **beta** | Preview / staging release |
 | `snowconvert-ai-dev` | **dev** | Development build (may be unstable) |
 
 ### Environment Detection
@@ -101,7 +101,7 @@ brew update && brew upgrade --cask snowconvert-ai-dev
 Each cask maps to a fixed environment — there is no fallback logic:
 
 - **`snowconvert-ai`** → uses only **prod** (GA versions)
-- **`snowconvert-ai-pupr`** → uses only **beta** (staging/Public Preview versions)
+- **`snowconvert-ai-pr`** → uses only **beta** (staging/Preview versions)
 - **`snowconvert-ai-dev`** → uses only **dev** (development versions)
 
 The update script fetches `latest-mac.yml` from Azure Blob Storage for each environment to detect the latest version and SHA256 hashes.
@@ -132,7 +132,7 @@ The `update.sh` script creates a temporary virtual environment, installs depende
 
 ```bash
 python update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb --cask-type prod
-python update.py snowconvert-ai-pupr.tmpl.rb snowconvert-ai-pupr.rb --cask-type beta
+python update.py snowconvert-ai-pr.tmpl.rb snowconvert-ai-pr.rb --cask-type beta
 python update.py snowconvert-ai-dev.tmpl.rb snowconvert-ai-dev.rb --cask-type dev
 ```
 

@@ -12,8 +12,8 @@ python3 update.py snowconvert-ai.tmpl.rb snowconvert-ai.rb --cask-type prod
 
 # Update beta cask
 echo ""
-echo "📦 Updating snowconvert-ai-pupr (beta/staging)..."
-python3 update.py snowconvert-ai-pupr.tmpl.rb snowconvert-ai-pupr.rb --cask-type beta
+echo "📦 Updating snowconvert-ai-pr (beta/staging)..."
+python3 update.py snowconvert-ai-pr.tmpl.rb snowconvert-ai-pr.rb --cask-type beta
 
 # Update development cask
 echo ""
@@ -27,5 +27,5 @@ echo "================================================================"
 echo ""
 echo "Files updated:"
 echo "  - Casks/snowconvert-ai.rb"
-echo "  - Casks/snowconvert-ai-pupr.rb"
+echo "  - Casks/snowconvert-ai-pr.rb"
 echo "  - Casks/snowconvert-ai-dev.rb"

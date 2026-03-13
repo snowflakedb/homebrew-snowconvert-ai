@@ -52,7 +52,7 @@ def detect_target_environment(cask_type: str = "prod") -> tuple[str, bool]:
     For prod cask (snowconvert-ai):
         - Only uses prod (GA versions)
     
-    For beta cask (snowconvert-ai-pupr):
+    For beta cask (snowconvert-ai-pr):
         - Always uses beta (staging versions)
     
     For dev cask (snowconvert-ai-dev):
