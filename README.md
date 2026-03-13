@@ -74,7 +74,7 @@ brew install --cask snowconvert-ai-pr
 # Update tap definitions and upgrade to latest version
 brew update && brew upgrade --cask snowconvert-ai
 
-# For public preview version
+# For preview (PR) version
 brew update && brew upgrade --cask snowconvert-ai-pr
 
 # For dev version
