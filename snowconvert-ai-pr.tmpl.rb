@@ -1,6 +1,6 @@
-cask "snowconvert-ai-pupr" do
+cask "snowconvert-ai-pr" do
   name "{{ cask_name }}"
-  desc "{{ cask_desc }} (Public Preview)"
+  desc "{{ cask_desc }} (Preview)"
   homepage "{{ cask_homepage }}"
   version "{{ sc_version }}"
 
@@ -24,14 +24,14 @@ cask "snowconvert-ai-pupr" do
   uninstall pkgutil: "com.snowflake.snowconvertai.cli"
 
   caveats <<~EOS
-    ⚠️  This is a Public Preview (PuPr) version of SnowConvert AI CLI
+    ⚠️  This is a Preview (PR) version of SnowConvert AI CLI
     
     The scai binary has been installed to /usr/local/snowconvertai/bin/scai
     A symlink has been created at /usr/local/bin/scai for easy access.
     
     You can now run: scai --help
     
-    Note: Public Preview versions may contain pre-release features. For production use:
+    Note: Preview versions may contain pre-release features. For production use:
       brew install --cask snowconvert-ai
   EOS
 end

@@ -63,7 +63,7 @@ jobs:
           set -e
           CASK_FILE="Casks/snowconvert-ai.rb"
           if [ "${{ matrix.cask_type }}" == "beta" ]; then
-            CASK_FILE="Casks/snowconvert-ai-pupr.rb"
+            CASK_FILE="Casks/snowconvert-ai-pr.rb"
           elif [ "${{ matrix.cask_type }}" == "dev" ]; then
             CASK_FILE="Casks/snowconvert-ai-dev.rb"
           fi
@@ -88,10 +88,10 @@ jobs:
             CASK_FILE="Casks/snowconvert-ai.rb"
             CASK_NAME="snowconvert-ai"
           elif [ "${{ matrix.cask_type }}" == "beta" ]; then
-            echo "Updating snowconvert-ai-pupr (beta/staging environment)..."
-            python3 update.py snowconvert-ai-pupr.tmpl.rb snowconvert-ai-pupr.rb --cask-type beta
-            CASK_FILE="Casks/snowconvert-ai-pupr.rb"
-            CASK_NAME="snowconvert-ai-pupr"
+            echo "Updating snowconvert-ai-pr (beta/staging environment)..."
+            python3 update.py snowconvert-ai-pr.tmpl.rb snowconvert-ai-pr.rb --cask-type beta
+            CASK_FILE="Casks/snowconvert-ai-pr.rb"
+            CASK_NAME="snowconvert-ai-pr"
           else
             echo "Updating snowconvert-ai-dev (development environment)..."
             python3 update.py snowconvert-ai-dev.tmpl.rb snowconvert-ai-dev.rb --cask-type dev
