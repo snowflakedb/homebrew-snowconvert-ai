@@ -2,20 +2,20 @@ cask "snowconvert-ai" do
   name "snowflake-scai-cli"
   desc "AI-powered CLI tool for automated code migration to Snowflake"
   homepage "https://docs.snowflake.com/en/migrations/snowconvert-docs/overview"
-  version "2.8.0-PuPr.15"
+  version "2.16.0"
 
   arch_suffix = Hardware::CPU.intel? ? "x64" : "arm64"
 
   if Hardware::CPU.intel?
-    sha256 "e3b409c5706f1654a5d224b507a56c9ef7a8aec2cf21d8df4de5b27cb348f9a9"
+    sha256 "2a0aadb372fae01c11ebbc86ce2febc6c339afa3102bd9670b7fdce1364f9cd0"
   else
-    sha256 "1f0615ac23e1a0c3daaf51ed47750266dec8da977de9403365ddc9e9ceccdbe6"
+    sha256 "a0e4bb5e1d042344eb3b82053909a8f0e4ce151f9ce4dc0121ffddd31221c2cb"
   end
 
-  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/beta/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
+  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/prod/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
 
   livecheck do
-    url "https://snowconvert.snowflake.com/storage/darwin_arm64/beta/cli/latest-mac.yml"
+    url "https://snowconvert.snowflake.com/storage/darwin_arm64/prod/cli/latest-mac.yml"
     strategy :electron_builder
   end
 
