@@ -19,6 +19,6 @@ CASK_DESC = "AI-powered CLI tool for automated code migration to Snowflake"
 CASK_HOMEPAGE = "https://docs.snowflake.com/en/migrations/snowconvert-docs/overview"
 
 PACKAGE_PREFIX = "snowflake-scai-cli"
-PACKAGE_EXTENSION = "pkg"
+PACKAGE_EXTENSION = "tar.gz"
 
 LIVECHECK_ARCH = "arm64"

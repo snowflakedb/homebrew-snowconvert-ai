@@ -1,11 +1,10 @@
 import argparse
-import hashlib
+import json
 import os
 import requests
 from pathlib import Path
 
 import jinja2
-import yaml
 from config import (
     ARTIFACT_REPO_BASE,
     INTEL,
@@ -69,24 +68,23 @@ def detect_target_environment(cask_type: str = "prod") -> tuple[str, bool]:
     if cask_type in ("dev", "beta"):
         env = cask_type
         try:
-            url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/{env}/cli/latest-mac.yml"
+            url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/{env}/cli/latest-archive.json"
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
                 return env, True
             else:
-                print(f"⚠ {env} environment requested but latest-mac.yml not found (HTTP {response.status_code})")
+                print(f"⚠ {env} environment requested but latest-archive.json not found (HTTP {response.status_code})")
                 return env, False
         except Exception as e:
             print(f"✗ Could not access {env} environment: {e}")
             return env, False
     
-    # For prod cask, only check prod environment
     try:
-        url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/prod/cli/latest-mac.yml"
+        url = f"{ARTIFACT_REPO_BASE}/darwin_arm64/prod/cli/latest-archive.json"
         response = requests.get(url, timeout=10)
         
         if response.status_code == 200:
-            metadata = yaml.safe_load(response.text)
+            metadata = response.json()
             version = metadata.get('version', '')
             print(f"✓ Found version {version} in prod environment")
             print(f"→ Using prod environment (GA release)")
@@ -100,6 +98,14 @@ def detect_target_environment(cask_type: str = "prod") -> tuple[str, bool]:
     return "prod", False
 
 
+def get_archive_metadata(architecture: str, environment: str) -> dict:
+    """Fetch and parse the latest-archive.json for the given architecture."""
+    url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{environment}/cli/latest-archive.json"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
+
 def main(template_name: str, file_name: str, cask_type: str = "prod"):
     """
     Updates the cask with the latest available version.
@@ -109,7 +115,6 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
         file_name: Output file name
         cask_type: "prod", "beta", or "dev" - determines which environment to use
     """
-    # Detect the correct environment
     environment, exists = detect_target_environment(cask_type)
     print(f"\n{'='*60}")
     print(f"Updating {file_name}")
@@ -120,7 +125,7 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
     if not exists:
         error_msg = f"❌ Cannot update {file_name}: No artifacts found in {environment} environment"
         print(error_msg)
-        raise FileNotFoundError(f"latest-mac.yml not found in {environment} environment at {ARTIFACT_REPO_BASE}/darwin_*/cli/latest-mac.yml")
+        raise FileNotFoundError(f"latest-archive.json not found in {environment} environment at {ARTIFACT_REPO_BASE}/darwin_*/cli/latest-archive.json")
     
     env = jinja2.Environment(
         loader=jinja2.loaders.FileSystemLoader(Path(__file__).parent)
@@ -131,9 +136,8 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
 
     template = env.get_template(str(template_path))
 
-    # Fetch latest metadata for both architectures from the detected environment
-    metadata_arm = get_yaml_metadata(ARM, environment)
-    metadata_intel = get_yaml_metadata(INTEL, environment)
+    metadata_arm = get_archive_metadata(ARM, environment)
+    metadata_intel = get_archive_metadata(INTEL, environment)
 
     version_arm = metadata_arm['version']
     version_intel = metadata_intel['version']
@@ -141,9 +145,8 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
     if version_arm != version_intel:
         raise ValueError(f"Latest version ARM ({version_arm}) and Intel ({version_intel}) do not match. Check with RELENG team, and make sure repo is updated")
 
-    # Download packages and calculate SHA256
-    sha_for_intel = calculate_sha256_from_pkg(metadata_intel, environment)
-    sha_for_arm = calculate_sha256_from_pkg(metadata_arm, environment)
+    sha_for_intel = metadata_intel['sha256']
+    sha_for_arm = metadata_arm['sha256']
 
     if not template_path.exists():
         raise ValueError(f"Template file not found: {template}")
@@ -166,29 +169,6 @@ def main(template_name: str, file_name: str, cask_type: str = "prod"):
         )
     print(f"\n✓ Successfully updated {file_name} to version {version_arm}")
     print(version_arm)
-
-def get_yaml_metadata(architecture: str, environment: str) -> dict:
-    """Fetch and parse the latest-mac.yml file for the given architecture."""
-    url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{environment}/cli/latest-mac.yml"
-    response = requests.get(url)
-    response.raise_for_status()
-    return yaml.safe_load(response.text)
-
-def calculate_sha256_from_pkg(metadata: dict, environment: str) -> str:
-    """Download the package and calculate its SHA256 hash."""
-    architecture = "arm64" if "arm64" in metadata['path'] else "x64"
-    pkg_url = f"{ARTIFACT_REPO_BASE}/darwin_{architecture}/{environment}/cli/{metadata['path']}"
-    
-    # Download the package
-    response = requests.get(pkg_url, stream=True)
-    response.raise_for_status()
-    
-    # Calculate SHA256
-    sha256_hash = hashlib.sha256()
-    for chunk in response.iter_content(chunk_size=8192):
-        sha256_hash.update(chunk)
-    
-    return sha256_hash.hexdigest()
 
 
 if __name__ == "__main__":

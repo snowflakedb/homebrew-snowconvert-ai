@@ -15,19 +15,21 @@ cask "snowconvert-ai-pr" do
   url "{{ artifact_repo_base }}/darwin_#{arch_suffix}/{{ environment }}/cli/{{ package_prefix }}-#{version}-darwin-#{arch_suffix}.{{ package_extension }}"
 
   livecheck do
-    url "{{ artifact_repo_base }}/darwin_{{ livecheck_arch }}/{{ environment }}/cli/latest-mac.yml"
-    strategy :electron_builder
+    url "{{ artifact_repo_base }}/darwin_{{ livecheck_arch }}/{{ environment }}/cli/latest-archive.json"
+    strategy :json do |json|
+      json["version"]
+    end
   end
 
-  pkg "{{ package_prefix }}-#{version}-darwin-#{arch_suffix}.{{ package_extension }}"
-  
+  binary "{{ package_prefix }}-#{version}/scai"
+
+  # Backward compat: clean up old .pkg installs during upgrade
   uninstall pkgutil: "com.snowflake.snowconvertai.cli"
 
   caveats <<~EOS
     ⚠️  This is a Preview (PR) version of SnowConvert AI CLI
     
-    The scai binary has been installed to /usr/local/snowconvertai/bin/scai
-    A symlink has been created at /usr/local/bin/scai for easy access.
+    The scai binary has been linked to #{HOMEBREW_PREFIX}/bin/scai
     
     You can now run: scai --help
     

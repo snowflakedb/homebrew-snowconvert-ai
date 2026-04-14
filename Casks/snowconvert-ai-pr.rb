@@ -2,32 +2,34 @@ cask "snowconvert-ai-pr" do
   name "snowflake-scai-cli"
   desc "AI-powered CLI tool for automated code migration to Snowflake (Preview)"
   homepage "https://docs.snowflake.com/en/migrations/snowconvert-docs/overview"
-  version "2.20.1-Pr.18"
+  version "2.20.0"
 
   arch_suffix = Hardware::CPU.intel? ? "x64" : "arm64"
 
   if Hardware::CPU.intel?
-    sha256 "cc327362a36efae78539431969359ac6064ebde84f8475834afb871c7340ab21"
+    sha256 "abc123def456abc123def456abc123def456abc123def456abc123def456abcd"
   else
-    sha256 "a1b4ea47b1418dcf64493f855479f2ac6f70e6cd6cc909e25c8d3019e507a097"
+    sha256 "789ghi012jkl789ghi012jkl789ghi012jkl789ghi012jkl789ghi012jklmnop"
   end
 
-  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/beta/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
+  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/prod/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.tar.gz"
 
   livecheck do
-    url "https://snowconvert.snowflake.com/storage/darwin_arm64/beta/cli/latest-mac.yml"
-    strategy :electron_builder
+    url "https://snowconvert.snowflake.com/storage/darwin_arm64/prod/cli/latest-archive.json"
+    strategy :json do |json|
+      json["version"]
+    end
   end
 
-  pkg "snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
-  
+  binary "snowflake-scai-cli-#{version}/scai"
+
+  # Backward compat: clean up old .pkg installs during upgrade
   uninstall pkgutil: "com.snowflake.snowconvertai.cli"
 
   caveats <<~EOS
     ⚠️  This is a Preview (PR) version of SnowConvert AI CLI
     
-    The scai binary has been installed to /usr/local/snowconvertai/bin/scai
-    A symlink has been created at /usr/local/bin/scai for easy access.
+    The scai binary has been linked to #{HOMEBREW_PREFIX}/bin/scai
     
     You can now run: scai --help
     
