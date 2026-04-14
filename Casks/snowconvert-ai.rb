@@ -7,25 +7,27 @@ cask "snowconvert-ai" do
   arch_suffix = Hardware::CPU.intel? ? "x64" : "arm64"
 
   if Hardware::CPU.intel?
-    sha256 "a1a1f1906f78e715acd6e02e6f624b10a80dbff698f97ee25ca14fe33a769522"
+    sha256 "abc123def456abc123def456abc123def456abc123def456abc123def456abcd"
   else
-    sha256 "d7a4d9cf8124e86d6967eaf7600b4615cf99d090a9a62de7daaceea7061e27fc"
+    sha256 "789ghi012jkl789ghi012jkl789ghi012jkl789ghi012jkl789ghi012jklmnop"
   end
 
-  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/prod/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
+  url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/prod/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.tar.gz"
 
   livecheck do
-    url "https://snowconvert.snowflake.com/storage/darwin_arm64/prod/cli/latest-mac.yml"
-    strategy :electron_builder
+    url "https://snowconvert.snowflake.com/storage/darwin_arm64/prod/cli/latest-archive.json"
+    strategy :json do |json|
+      json["version"]
+    end
   end
 
-  pkg "snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
-  
+  binary "snowflake-scai-cli-#{version}/scai"
+
+  # Backward compat: clean up old .pkg installs during upgrade
   uninstall pkgutil: "com.snowflake.snowconvertai.cli"
 
   caveats <<~EOS
-    The scai binary has been installed to /usr/local/snowconvertai/bin/scai
-    A symlink has been created at /usr/local/bin/scai for easy access.
+    The scai binary has been linked to #{HOMEBREW_PREFIX}/bin/scai
     
     You can now run: scai --help
   EOS
