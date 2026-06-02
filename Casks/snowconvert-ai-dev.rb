@@ -2,14 +2,14 @@ cask "snowconvert-ai-dev" do
   name "snowflake-scai-cli"
   desc "AI-powered CLI tool for automated code migration to Snowflake (Development Version)"
   homepage "https://docs.snowflake.com/en/migrations/snowconvert-docs/overview"
-  version "2.30.0-rc.16"
+  version "2.30.0-rc.17"
 
   arch_suffix = Hardware::CPU.intel? ? "x64" : "arm64"
 
   if Hardware::CPU.intel?
-    sha256 "3d9eddbbf9a6723ee4e73e15605c488bfc18ffcf7a653eddc787a9e22211a39a"
+    sha256 "bf78529e65c003051ffdae2265e71b610e33debaa8d67310b7ced92841acdf1e"
   else
-    sha256 "4b8dc6bb3b569e4250137479725f6528abd8f760662b34da66b9c0b724325702"
+    sha256 "5c304d489d7e2687ab819387b0bbecd8a3d45527b9eeccf1eb448b69b1f4d8e4"
   end
 
   url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/dev/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
