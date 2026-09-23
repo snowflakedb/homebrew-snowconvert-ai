@@ -7,9 +7,9 @@ cask "snowconvert-ai" do
   arch_suffix = Hardware::CPU.intel? ? "x64" : "arm64"
 
   if Hardware::CPU.intel?
-    sha256 "edd617f31eedce05afb66df0bca7b562aaa0ddaae897ea1ec91865918606933f"
+    sha256 "bb95d72cdbce59409e38937be1b71684f00af81cdef3bc709b6e3ed670389dab"
   else
-    sha256 "870b9e823956456c1e8df7ac15b6f79bdc4e8d32d09800cdc5b8cc9fa2a31f78"
+    sha256 "635d2c9c8f48bcc1e81ef3605cfe2fdb297a273b15ac11efd1938c09703a7add"
   end
 
   url "https://snowconvert.snowflake.com/storage/darwin_#{arch_suffix}/prod/cli/snowflake-scai-cli-#{version}-darwin-#{arch_suffix}.pkg"
